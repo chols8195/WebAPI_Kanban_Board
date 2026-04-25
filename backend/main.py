@@ -7,6 +7,6 @@ load_dotenv()
 
 app = FastAPI(title="Kanban Board")
 
-# app.include_router(pomodoro.router)
+app.include_router(pomodoro.router)
 app.include_router(canvas.router)
-# app.include_router(logs.router)
+app.include_router(logs.router)
