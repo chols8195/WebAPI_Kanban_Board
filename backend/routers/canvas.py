@@ -1,50 +1,60 @@
-# backend/routers/canvas.py
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 import httpx
 import os
-from db import supabase 
+from db import supabase
 
 router = APIRouter(prefix="/canvas", tags=["canvas"])
 
 CANVAS_BASE_URL = os.getenv("CANVAS_BASE_URL")
+STUDENT_ID = os.getenv("TEST_STUDENT_ID")
 
-@ router.get("/")
-async def sync_canvas(q: str):
+@router.get("/")
+async def sync_canvas(request: Request):
+    q = request.query_params.get("q")
     headers = {"Authorization": f"Bearer {q}"}
     
     async with httpx.AsyncClient() as client:
-        # Fetch courses
-        courses_res = await client.get(f"{CANVAS_BASE_URL}/courses")
+        
+        # fetch courses
+        courses_res = await client.get(f"{CANVAS_BASE_URL}/courses", headers=headers)
         if courses_res.status_code != 200:
-            raise HTTPException(status_code=400, detail="Invalid Canvas token or could not fetch courses")
+            raise HTTPException(status_code=400, detail=f"Courses error: {courses_res.text}")
         
         courses = courses_res.json()
-        
-        # Fetch upcoming assignments 
-        assignments_res = await client.get(f"{CANVAS_BASE_URL}/users/self/upcoming_assignments", headers=headers)
-        if assignments_res.status_code != 200:
-            raise HTTPException(status_code=400, detail="Could not fetch assignments")
-        
-        assignments = assignments_res.json()
-        
-    # Update and insert courses into db 
-    for course in courses:
-        supabase.table("courses").upsert({
-            "canvas_course_id": str(course["id"]),
-            "course_name": course.get("name"),
-            "course_code": course.get("course_code"),
-            "is_visible_on_board": True
-        }).execute()
-        
-    # Update and insert assignments into db 
-    for assignment in assignments:
+
+        # upsert courses first
+        for course in courses:
+            supabase.table("courses").upsert({
+                "student_id": STUDENT_ID,
+                "canvas_course_id": str(course["id"]),
+                "course_name": course.get("name"),
+                "course_code": course.get("course_code"),
+                "is_visible_on_board": True
+            }).execute()
+
+        # fetch assignments per course
+        all_assignments = []
+        for course in courses:
+            assignments_res = await client.get(
+                f"{CANVAS_BASE_URL}/courses/{course['id']}/assignments",
+                headers=headers
+            )
+            if assignments_res.status_code == 200:
+                assignments = assignments_res.json()
+                for a in assignments:
+                    a["course_id"] = course["id"]
+                all_assignments.extend(assignments)
+
+    # upsert assignments
+    for assignment in all_assignments:
         course = supabase.table("courses").select("id").eq(
             "canvas_course_id", str(assignment.get("course_id"))
         ).execute()
         
-        course_id = course.data[0]["id"] if course.data else None 
-        
+        course_id = course.data[0]["id"] if course.data else None
+
         supabase.table("tasks").upsert({
+            "student_id": STUDENT_ID,
             "canvas_assignment_id": str(assignment["id"]),
             "title": assignment.get("name"),
             "description": assignment.get("description"),
@@ -53,5 +63,5 @@ async def sync_canvas(q: str):
             "board_column": "todo",
             "due_date": assignment.get("due_at")
         }).execute()
-        
-    return {"message": "Canvas sync complete", "courses": len(courses), "assignments": len(assignments)}
+
+    return {"message": "Canvas sync complete", "courses": len(courses), "assignments": len(all_assignments)}
