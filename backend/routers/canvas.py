@@ -18,4 +18,13 @@ async def sync_canvas(q: str):
         if courses_res.status_code != 200:
             raise HTTPException(status_code=400, detail="Invalid Canvas token or could not fetch courses")
         
-        coureses = courses_res.json()
+        courses = courses_res.json()
+        
+        # Fetch upcoming assignments 
+        assignments_res = await client.get(f"{CANVAS_BASE_URL}/users/self/upcoming_assignments", headers=headers)
+        if assignments_res.status_code != 200:
+            raise HTTPException(status_code=400, detail="Could not fetch assignments")
+        
+        assignments = assignments_res.json()
+        
+        
