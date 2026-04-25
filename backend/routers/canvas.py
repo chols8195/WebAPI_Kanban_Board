@@ -27,4 +27,13 @@ async def sync_canvas(q: str):
         
         assignments = assignments_res.json()
         
+    # Update and insert courses into db 
+    for course in courses:
+        supabase.table("courses").upsert({
+            "canvas_course_id": str(course["id"]),
+            "course_name": course.get("name"),
+            "course_code": course.get("course_code"),
+            "is_visible_on_board": True
+        }).execute()
         
+    
