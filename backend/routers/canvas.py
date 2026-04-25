@@ -36,4 +36,22 @@ async def sync_canvas(q: str):
             "is_visible_on_board": True
         }).execute()
         
-    
+    # Update and insert assignments into db 
+    for assignment in assignments:
+        course = supabase.table("courses").select("id").eq(
+            "canvas_course_id", str(assignment.get("course_id"))
+        ).execute()
+        
+        course_id = course.data[0]["id"] if course.data else None 
+        
+        supabase.table("tasks").upsert({
+            "canvas_assignment_id": str(assignment["id"]),
+            "title": assignment.get("name"),
+            "description": assignment.get("description"),
+            "course_id": course_id,
+            "card_type": "canvas_synced",
+            "board_column": "todo",
+            "due_date": assignment.get("due_at")
+        }).execute()
+        
+    return {"message": "Canvas sync complete", "courses": len(courses), "assignments": len(assignments)}
