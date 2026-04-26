@@ -139,3 +139,12 @@ def abandon_session(session_id: str, body: UpdateSession):
     
     return response.data[0]
 
+# DELETE a session 
+@router.delete("/{session_id}")
+def delete_session(session_id: str):
+    response = supabase.table("pomodoro_sessions").delete().eq(
+        "id", session_id
+    ).execute()
+    
+    return {"message": "Session deleted"}
+
