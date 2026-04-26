@@ -36,7 +36,7 @@ def create_access_token(data: dict) -> str:
     return jwt.encode(to_encode, jwt_secret_key, algorithm=jwt_algorithm)
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
+def authenticate_user(token: str = Depends(oauth2_scheme)) -> dict:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -165,6 +165,6 @@ def register(user: RegisterRequest):
 
 
 @router.get("/me")
-def get_me(current_user: dict = Depends(get_current_user)):
+def get_me(current_user: dict = Depends(authenticate_user)):
     # Protected route to return current user information
     return current_user
