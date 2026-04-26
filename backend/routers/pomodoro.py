@@ -23,3 +23,34 @@ def get_sessions(student_id: str):
     ).order("started_at", desc=True).execute()
     return response.data
 
+# GET one session 
+@router.get("/{session_id}")
+def get_session(session_id: str):
+    response = supabase.table("pomodoro_sessions").select("*").eq(
+        "id", session_id
+    ).execute()
+    
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return response.data[0]
+
+# POST start a session 
+@router.post("/")
+def start_session(body: StartSession):
+    # Check beforehand if a student already has an active session 
+    active = supabase.table("pomodoro_sessions").select("*").eq(
+        "student_id", body.student_id
+    ).eq("status", "active").execute()
+    
+    if active.data:
+        raise HTTPException(status_code=400, detail="You already have an active session")
+    
+    # Update task doing_started_at if not already set 
+    task = supabase.table("tasks").select("*").eq("id", body.task_id).execute()
+    if task.data and not task.data[0].get("doing_started_at"):
+        supabase.table("tasks").update({
+            "doing_started_at": "now()",
+            "board_column": "doing"
+        }).eq("id", body.task_id).execute()
+        
+    
