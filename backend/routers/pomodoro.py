@@ -160,3 +160,15 @@ def get_preferences(student_id: str):
     
     return response.data[0]
 
+# PATCH update preferences 
+@router.patch("/preferences/{student_id}")
+def update_preferences(student_id: str, work_minutes: int = 25, short_break_minutes: int = 5, long_break_minutes: int = 15, sessions_before_long_break: int = 41):
+    response = supabase.table("pomodoro_preferences").upsert({
+        "student_id": student_id,
+        "work_minutes": work_minutes,
+        "short_break_minutes": short_break_minutes,
+        "long_break_minutes": long_break_minutes,
+        "sessions_before_long_break": sessions_before_long_break
+    }).execute()
+    
+    return response.data[0]
