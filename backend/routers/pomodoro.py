@@ -109,3 +109,33 @@ def complete_session(session_id: str, body: UpdateSession):
     
     return response.data[0]
 
+# PATCH abandon a session
+@router.patch("/{session_id}/abandon")
+def abandon_session(session_id: str, body: UpdateSession):
+    session = supabase.table("pomodoro_sessions").select("*").eq(
+        "id", session_id
+    ).execute()
+    
+    if not session.data:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    response = supabase.table("pomodoro_sessions").update({
+        "status": "abandoned",
+        "actual_seconds": body.actual_seconds,
+        "end_reason": body.end_reason or "abandoned",
+        "ended_at": "now()"
+    }).eq("id", session_id).execute()
+    
+    current = session.data[0]
+    
+    log_event(
+        student_id=current["student_id"],
+        task_id=current["task_id"],
+        pomodoro_session_id=session_id,
+        event_type="pomodoro_abandoned",
+        previous_value=str(current["planned_seconds"]),
+        new_value=str(body.actual_seconds)
+    )
+    
+    return response.data[0]
+
