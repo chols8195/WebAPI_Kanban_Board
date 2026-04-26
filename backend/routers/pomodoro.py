@@ -148,3 +148,15 @@ def delete_session(session_id: str):
     
     return {"message": "Session deleted"}
 
+# GET pomodoro preferences 
+@router.get("/preferences/{student_id}")
+def get_preferences(student_id: str):
+    response = supabase.table("pomodoro_preferences").select("*").eq(
+        "student_id", student_id
+    ).execute()
+    
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Preferences not found")
+    
+    return response.data[0]
+
