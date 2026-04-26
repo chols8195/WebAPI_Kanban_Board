@@ -17,6 +17,15 @@ access_token_expires = 60
 jwt_algorithm = "HS256"
 
 
+class SignInRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8)
+
+
+class RegisterRequest(SignInRequest):
+    name: str
+
+
 def hash_password(password: str) -> str:
     return password_hash.hash(password)
 
@@ -78,15 +87,6 @@ def authenticate_user(token: str = Depends(oauth2_scheme)) -> dict:
 
     # Return user information
     return result.data[0]
-
-
-class SignInRequest(BaseModel):
-    email: EmailStr
-    password: str = Field(min_length=8)
-
-
-class RegisterRequest(SignInRequest):
-    name: str
 
 
 @router.post("/signin")
@@ -165,6 +165,6 @@ def register(user: RegisterRequest):
 
 
 @router.get("/me")
-def get_me(current_user: dict = Depends(authenticate_user)):
+def get_me(user: dict = Depends(authenticate_user)):
     # Protected route to return current user information
-    return current_user
+    return user
