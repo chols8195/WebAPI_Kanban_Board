@@ -54,3 +54,58 @@ def start_session(body: StartSession):
         }).eq("id", body.task_id).execute()
         
     
+    response = supabase.table("pomodoro_sessions").insert({
+        "student_id": body.student_id,
+        "task_id": body.task_id,
+        "planned_seconds": body.planned_seconds,
+        "status": "active"
+    }).execute()
+    
+    session = response.data[0]
+    
+    log_event(
+        student_id=body.student_id,
+        task_id=body.task_id,
+        pomodoro_session_id=session["id"],
+        event_type="pomodoro_started",
+        new_value=str(body.planned_seconds)
+    )
+    
+    return session
+
+# PATCH completing a session 
+@router.patch("/{session_id}/complete")
+def complete_session(session_id: str, body: UpdateSession):
+    session = supabase.table("pomodoro_sessions").select("*").eq(
+        "id", session_id
+    ).execute()
+    
+    if not session.data:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    response = supabase.table("pomodoro_sessions").update({
+        "status": "completed",
+        "actual_seconds": body.actual_seconds,
+        "end_reason": "completed",
+        "ended_at": "now()"
+    }).eq("id", session_id).execute()
+    
+    # Update total focus seconds on task
+    current = session.data[0]
+    supabase.table("tasks").update({
+        "total_focus_seconds": supabase.rpc("increment_focus", {
+            "task_id": current["task_id"],
+            "seconds": body.actual_seconds
+        })
+    })
+    
+    log_event(
+        student_id=current["student_id"],
+        task_id=current["task_id"],
+        pomodoro_session_id=session_id,
+        event_type="pomodoro_completed",
+        new_value=str(body.actual_seconds)
+    )
+    
+    return response.data[0]
+
