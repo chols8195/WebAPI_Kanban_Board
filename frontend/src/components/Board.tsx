@@ -7,9 +7,9 @@ interface BoardProps {
 }
 
 export default function Board({ tasks, onMoveTask }: BoardProps) {
-  const todoTasks = tasks.filter((task) => task.status === "todo");
-  const progTasks = tasks.filter((task) => task.status === "prog");
-  const doneTasks = tasks.filter((task) => task.status === "done");
+  const todoTasks = tasks.filter((t) => t.board_column === "todo");
+  const progTasks = tasks.filter((t) => t.board_column === "doing");
+  const doneTasks = tasks.filter((t) => t.board_column === "done");
 
   return (
     <div className="grid h-full grid-cols-3 gap-3 overflow-hidden">

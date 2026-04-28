@@ -5,53 +5,36 @@ interface TaskCardProps {
   onMoveTask: (taskId: string, newStatus: TaskStatus) => void;
 }
 
-function getCourseStyles(course: string) {
-  switch (course) {
-    case "CS 3450":
-      return "bg-blue-100 text-blue-700";
-    case "MATH 2210":
-      return "bg-yellow-100 text-yellow-700";
-    case "ENG 3100":
-      return "bg-green-100 text-green-700";
-    case "HIST 1510":
-      return "bg-orange-100 text-orange-700";
-    default:
-      return "bg-purple-100 text-purple-700";
-  }
-}
-
 export default function TaskCard({ task, onMoveTask }: TaskCardProps) {
   const moveLeft = () => {
-    if (task.status === "prog") onMoveTask(task.id, "todo");
-    if (task.status === "done") onMoveTask(task.id, "prog");
+    if (task.board_column === "doing") onMoveTask(task.id, "todo");
+    if (task.board_column === "done") onMoveTask(task.id, "doing");
   };
 
   const moveRight = () => {
-    if (task.status === "todo") onMoveTask(task.id, "prog");
-    if (task.status === "prog") onMoveTask(task.id, "done");
+    if (task.board_column === "todo") onMoveTask(task.id, "doing");
+    if (task.board_column === "doing") onMoveTask(task.id, "done");
   };
 
   return (
     <div
       className={`rounded-lg border bg-gray-50 p-2 ${
-        task.status === "done" ? "opacity-60" : ""
+        task.board_column === "done" ? "opacity-60" : ""
       }`}
     >
-      <div
-        className={`mb-1 inline-block rounded px-2 py-1 text-[10px] font-medium ${getCourseStyles(
-          task.course
-        )}`}
-      >
-        {task.course}
-      </div>
+      {task.course_name && (
+        <div className="mb-1 inline-block rounded bg-blue-100 px-2 py-1 text-[10px] font-medium text-blue-700">
+          {task.course_name}
+        </div>
+      )}
 
       <div className="text-sm font-medium leading-tight text-gray-800">
         {task.title}
       </div>
 
       <div className="mb-2 text-[10px] text-gray-400">
-        {task.dueDate || "No due date"}
-        {task.isStudyBlock && (
+        {task.due_date ? new Date(task.due_date).toLocaleDateString() : "No due date"}
+        {task.card_type === 'study_block' && (
           <span className="ml-2 rounded bg-purple-100 px-1.5 py-0.5 text-purple-700">
             study
           </span>
@@ -59,7 +42,7 @@ export default function TaskCard({ task, onMoveTask }: TaskCardProps) {
       </div>
 
       <div className="flex justify-end gap-2">
-        {task.status !== "todo" && (
+        {task.board_column !== "todo" && (
           <button
             onClick={moveLeft}
             className="rounded border px-2 py-1 text-[10px] text-gray-600"
@@ -68,7 +51,7 @@ export default function TaskCard({ task, onMoveTask }: TaskCardProps) {
           </button>
         )}
 
-        {task.status !== "done" && (
+        {task.board_column !== "done" && (
           <button
             onClick={moveRight}
             className="rounded border px-2 py-1 text-[10px] text-gray-600"

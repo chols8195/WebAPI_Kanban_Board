@@ -1,13 +1,20 @@
 import { useState } from "react";
-import type { Task } from "../types";
+import type { Course } from "../types";
 
 interface AddTaskFormProps {
-  onAddTask: (task: Omit<Task, "id" | "status">) => void;
+  courses: Course[];
+  onAddTask: (task: {
+    title: string;
+    course_id?: string;
+    due_date?: string;
+    card_type: string;
+    estimated_minutes?: number;
+  }) => void;
 }
 
-export default function AddTaskForm({ onAddTask }: AddTaskFormProps) {
+export default function AddTaskForm({ onAddTask, courses }: AddTaskFormProps) {
   const [title, setTitle] = useState("");
-  const [course, setCourse] = useState("CS 3450");
+  const [courseId, setCourseId] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [isStudyBlock, setIsStudyBlock] = useState(false);
 
@@ -18,13 +25,13 @@ export default function AddTaskForm({ onAddTask }: AddTaskFormProps) {
 
     onAddTask({
       title,
-      course,
-      dueDate,
-      isStudyBlock,
+      course_id: courseId || undefined,
+      due_date: dueDate || undefined,
+      card_type: isStudyBlock ? 'study_block' : 'canvas_synced',
     });
 
     setTitle("");
-    setCourse("CS 3450");
+    setCourseId("");
     setDueDate("");
     setIsStudyBlock(false);
   };
@@ -48,15 +55,16 @@ export default function AddTaskForm({ onAddTask }: AddTaskFormProps) {
         />
 
         <select
-          value={course}
-          onChange={(e) => setCourse(e.target.value)}
+          value={courseId}
+          onChange={(e) => setCourseId(e.target.value)}
           className="h-10 min-w-[140px] rounded-lg border px-3 text-sm outline-none focus:border-indigo-500"
         >
-          <option value="CS 3450">CS 3450</option>
-          <option value="MATH 2210">MATH 2210</option>
-          <option value="ENG 3100">ENG 3100</option>
-          <option value="HIST 1510">HIST 1510</option>
-          <option value="Personal">Personal</option>
+          <option value="">No Course</option>
+          {courses.map((course) => (
+            <option key={course.id} value={course.id}>
+              {course.course_code || course.course_name}
+            </option>
+          ))}
         </select>
 
         <input
