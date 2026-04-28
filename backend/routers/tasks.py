@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from datetime import datetime, timezone
 from pydantic import BaseModel
 from uuid import UUID
+from utils.logger import log_event
 from routers.auth import authenticate_user
 from db import supabase
 
@@ -66,6 +67,13 @@ def create_task(task: CreateTask, user: dict = Depends(authenticate_user)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Task creation failed",
         )
+        
+    log_event(
+        student_id=user["id"],
+        task_id=result.data[0]["id"],
+        event_type="task_created",
+        new_value=task.board_column
+    )
 
     return result.data[0]
 
@@ -81,6 +89,10 @@ def update_task(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="No update fields provided"
         )
+        
+    current = supabase.table("tasks").select("*").eq("id", str(task_id)).eq("student_id", user["id"]).execute()
+    if not current.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found.")
 
     # Logic to set task as "completed" in db
     if "board_column" in updates:
@@ -102,6 +114,15 @@ def update_task(
     if not result.data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found."
+        )
+
+    if "board_column" in updates:
+        log_event(
+            student_id=user["id"],
+            task_id=str(task_id),
+            event_type="column_move",
+            previous_value=current.data[0]["board_column"],
+            new_value=updates["board_column"]
         )
 
     return result.data[0]

@@ -22,8 +22,11 @@ class SignInRequest(BaseModel):
     password: str = Field(min_length=8)
 
 
-class RegisterRequest(SignInRequest):
+class RegisterRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8)
     name: str
+    canvas_token: str
 
 
 def hash_password(password: str) -> str:
@@ -149,6 +152,7 @@ def register(user: RegisterRequest):
         "email": user.email,
         "password_hash": hashed_password,
         "display_name": user.name,
+        "canvas_access_token": user.canvas_token,
     }
 
     # Insert row in db
