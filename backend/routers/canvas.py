@@ -32,12 +32,12 @@ async def sync_canvas(user: dict = Depends(authenticate_user)):
 
         for course in courses:
             supabase.table("courses").upsert({
-                "student_id": user["id"],
-                "canvas_course_id": str(course["id"]),
-                "course_name": course.get("name"),
-                "course_code": course.get("course_code"),
-                "is_visible_on_board": True
-            }).execute()
+            "student_id": user["id"],
+            "canvas_course_id": str(course["id"]),
+            "course_name": course.get("name"),
+            "course_code": course.get("course_code"),
+            "is_visible_on_board": True
+        }, on_conflict="canvas_course_id").execute()
 
         all_assignments = []
         for course in courses:
@@ -59,14 +59,14 @@ async def sync_canvas(user: dict = Depends(authenticate_user)):
         course_id = course.data[0]["id"] if course.data else None
 
         supabase.table("tasks").upsert({
-            "student_id": user["id"],
-            "canvas_assignment_id": str(assignment["id"]),
-            "title": assignment.get("name"),
-            "description": assignment.get("description"),
-            "course_id": course_id,
-            "card_type": "canvas_synced",
-            "board_column": "todo",
-            "due_date": assignment.get("due_at")
-        }).execute()
+        "student_id": user["id"],
+        "canvas_assignment_id": str(assignment["id"]),
+        "title": assignment.get("name"),
+        "description": assignment.get("description"),
+        "course_id": course_id,
+        "card_type": "canvas_synced",
+        "board_column": "todo",
+        "due_date": assignment.get("due_at")
+    }, on_conflict="canvas_assignment_id").execute()
 
     return {"message": "Canvas sync complete", "courses": len(courses), "assignments": len(all_assignments)}
