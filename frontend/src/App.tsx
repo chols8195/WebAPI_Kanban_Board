@@ -6,7 +6,6 @@ import PomodoroPanel from "./components/PomodoroPanel";
 import AddTaskForm from "./components/AddTaskForm";
 import AuthScreen from './components/AuthScreen';
 import type { Task, TaskStatus, Filters, Course } from "./types";
-import { isAuthenticated } from "./services/api";
 import { getTasks, getCourses, updateTask, createTask, syncCanvas, isAuthenticated } from "./services/api";
 
 function isOverdue(dueDate: string) {
@@ -68,7 +67,7 @@ export default function App() {
     setTasks((prev) => [created, ...prev]);
   };
 
-  const handleMoveTask = (taskId: string, newStatus: TaskStatus) => {
+  const handleMoveTask = async (taskId: string, newStatus: TaskStatus) => {
     setTasks((prev) =>
       prev.map((task) =>
         task.id === taskId ? { ...task, board_column: newStatus } : task
