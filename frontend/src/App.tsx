@@ -6,7 +6,7 @@ import PomodoroPanel from "./components/PomodoroPanel";
 import AddTaskForm from "./components/AddTaskForm";
 import AuthScreen from './components/AuthScreen';
 import type { Task, TaskStatus, Filters, Course } from "./types";
-import { getTasks, getCourses, updateTask, createTask, syncCanvas, isAuthenticated } from "./services/api";
+import { getTasks, getCourses, updateTask, createTask, deleteTask, syncCanvas, isAuthenticated } from "./services/api";
 
 function isOverdue(dueDate: string) {
   if (!dueDate) return false;
@@ -39,22 +39,34 @@ export default function App() {
     loadData();
   }, [loggedIn])
 
-  async function loadData() {
-    setLoading(true);
+async function loadData() {
+  setLoading(true);
 
-    try {
-      const [tasksData, coursesData] = await Promise.all([
-        getTasks(), 
-        getCourses(),
-      ]);
-      setTasks(tasksData);
-      setCourses(coursesData);
-    } catch (err) {
-      console.error("Failed to load data", err);
-    } finally {
-      setLoading(false);
-    }
+  try {
+    const [tasksData, coursesData] = await Promise.all([
+      getTasks(),
+      getCourses(),
+    ]);
+
+    const tasksWithCourseNames = tasksData.map((task: Task) => {
+      const matchingCourse = coursesData.find(
+        (course: Course) => course.id === task.course_id
+      );
+
+      return {
+        ...task,
+        course_name: matchingCourse?.course_name,
+      };
+    });
+
+    setTasks(tasksWithCourseNames);
+    setCourses(coursesData);
+  } catch (err) {
+    console.error("Failed to load data", err);
+  } finally {
+    setLoading(false);
   }
+}
 
   const handleAddTask = async (newTask: { title: string; course_id?: string; due_date?: string; card_type: string; estimated_minutes?: number; }) => {
     const created = await createTask({
@@ -65,6 +77,29 @@ export default function App() {
       estimated_minutes: newTask.estimated_minutes,
     });
     setTasks((prev) => [created, ...prev]);
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    const taskToDelete = tasks.find((task) => task.id === taskId);
+
+    if (!taskToDelete) return;
+
+    const canDelete =
+      taskToDelete.card_type !== "canvas_synced" ||
+      taskToDelete.board_column === "done";
+
+    if (!canDelete) {
+      return;
+    }
+
+    setTasks((prev) => prev.filter((task) => task.id !== taskId));
+
+    try {
+      await deleteTask(taskId);
+    } catch (err) {
+      console.error("Failed to delete task", err);
+      await loadData();
+    }
   };
 
   const handleMoveTask = async (taskId: string, newStatus: TaskStatus) => {
@@ -145,11 +180,15 @@ export default function App() {
         <main className="flex h-full flex-col overflow-hidden p-3">
           <AddTaskForm onAddTask={handleAddTask} courses={courses}/>
           <div className="mt-3 min-h-0 flex-1 overflow-hidden">
-            <Board tasks={filteredTasks} onMoveTask={handleMoveTask} />
+            <Board
+              tasks={filteredTasks}
+              onMoveTask={handleMoveTask}
+              onDeleteTask={handleDeleteTask}
+            />
           </div>
         </main>
 
-        <PomodoroPanel tasks={tasks}/>
+        <PomodoroPanel/>
       </div>
     </div>
   );

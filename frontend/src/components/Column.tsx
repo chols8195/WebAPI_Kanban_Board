@@ -5,16 +5,27 @@ interface ColumnProps {
   title: string;
   tasks: Task[];
   onMoveTask: (taskId: string, newStatus: TaskStatus) => void;
+  onDeleteTask: (taskId: string) => void;
 }
 
-export default function Column({ title, tasks, onMoveTask }: ColumnProps) {
+export default function Column({
+  title,
+  tasks,
+  onMoveTask,
+  onDeleteTask,
+}: ColumnProps) {
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-col rounded-xl border bg-white p-3">
       <h2 className="mb-3 text-center text-lg font-semibold">{title}</h2>
 
       <div className="flex-1 space-y-2 overflow-y-auto overflow-x-hidden pr-1">
         {tasks.map((task) => (
-          <TaskCard key={task.id} task={task} onMoveTask={onMoveTask} />
+          <TaskCard
+            key={task.id}
+            task={task}
+            onMoveTask={onMoveTask}
+            onDeleteTask={onDeleteTask}
+          />
         ))}
       </div>
     </div>
