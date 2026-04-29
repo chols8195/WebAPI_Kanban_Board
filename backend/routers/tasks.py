@@ -18,6 +18,7 @@ class CreateTask(BaseModel):
     title: str
 
     # Optional fields
+    course_id: str | None = None
     estimated_minutes: int | None = None
     description: str | None = None
     due_date: str | None = None
