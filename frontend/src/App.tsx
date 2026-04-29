@@ -77,7 +77,9 @@ export default function App() {
   };
 
   const handleSync = async () => {
-    await syncCanvas();
+    console.log("Syncing canvas...");
+    const result = await syncCanvas();
+    console.log("Sync result:", result);
     await loadData();
   };
 
@@ -110,6 +112,10 @@ export default function App() {
       </div>
     );
   }
+  
+  if (!loggedIn) {
+    return <AuthScreen onAuth={() => setLoggedIn(true)} />;
+  }
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-gray-100">
@@ -133,6 +139,7 @@ export default function App() {
               showOverdueOnly: !prev.showOverdueOnly,
             }))
           }
+          onSync={handleSync}
         />
 
         <main className="flex h-full flex-col overflow-hidden p-3">
