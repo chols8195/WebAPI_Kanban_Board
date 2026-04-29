@@ -68,16 +68,34 @@ async function loadData() {
   }
 }
 
-  const handleAddTask = async (newTask: { title: string; course_id?: string; due_date?: string; card_type: string; estimated_minutes?: number; }) => {
-    const created = await createTask({
-      title: newTask.title,
-      card_type: newTask.card_type,
-      board_column: "todo",
-      due_date: newTask.due_date,
-      estimated_minutes: newTask.estimated_minutes,
-    });
-    setTasks((prev) => [created, ...prev]);
-  };
+const handleAddTask = async (newTask: {
+  title: string;
+  course_id?: string;
+  due_date?: string;
+  card_type: string;
+  estimated_minutes?: number;
+}) => {
+  const created = await createTask({
+    title: newTask.title,
+    course_id: newTask.course_id,
+    card_type: newTask.card_type,
+    board_column: "todo",
+    due_date: newTask.due_date,
+    estimated_minutes: newTask.estimated_minutes,
+  });
+
+  const matchingCourse = courses.find(
+    (course) => course.id === newTask.course_id
+  );
+
+  setTasks((prev) => [
+    {
+      ...created,
+      course_name: matchingCourse?.course_name,
+    },
+    ...prev,
+  ]);
+};
 
   const handleDeleteTask = async (taskId: string) => {
     const taskToDelete = tasks.find((task) => task.id === taskId);

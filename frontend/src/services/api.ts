@@ -106,13 +106,22 @@ export async function getTasks() {
     return res.json();
 }
 
-export async function createTask(task: {title: string; card_type: string; board_column: string; description?: string; due_date?: string; estimated_minutes?: number; }) {
-    const res = await fetch(`${BASE_URL}/tasks`, {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify(task),
-    });
-    return res.json();
+export async function createTask(task: {
+  title: string;
+  course_id?: string;
+  card_type: string;
+  board_column: string;
+  description?: string;
+  due_date?: string;
+  estimated_minutes?: number;
+}) {
+  const res = await fetch(`${BASE_URL}/tasks`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(task),
+  });
+
+  return res.json();
 }
 
 export async function updateTask(taskId: string, updates: { board_column?: string; title?: string; description?: string; due_date?: string; estimated_minutes?: number; }) {
