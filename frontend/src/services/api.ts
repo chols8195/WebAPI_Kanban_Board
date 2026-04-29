@@ -1,14 +1,41 @@
 const BASE_URL = "http://127.0.0.1:8000" || import.meta.env.VITE_API_URL;
 console.log("BASE_URL:", BASE_URL);
 
-let memoryToken: string | null = null;
+const TOKEN_STORAGE_KEY = "kanban_access_token";
+
+function readStoredToken(): string | null {
+    if (typeof globalThis === "undefined" || !("localStorage" in globalThis)) {
+        return null;
+    }
+    try {
+        return globalThis.localStorage.getItem(TOKEN_STORAGE_KEY);
+    } catch {
+        return null;
+    }
+}
+
+let memoryToken: string | null = readStoredToken();
 
 export function setToken(token: string) {
     memoryToken = token;
+    if (typeof globalThis !== "undefined" && "localStorage" in globalThis) {
+        try {
+            globalThis.localStorage.setItem(TOKEN_STORAGE_KEY, token);
+        } catch {
+            /* storage unavailable (e.g. private mode) */
+        }
+    }
 }
 
 export function clearToken() {
     memoryToken = null;
+    if (typeof globalThis !== "undefined" && "localStorage" in globalThis) {
+        try {
+            globalThis.localStorage.removeItem(TOKEN_STORAGE_KEY);
+        } catch {
+            /* ignore */
+        }
+    }
 }
 
 export function isAuthenticated(): boolean {
