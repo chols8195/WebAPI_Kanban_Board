@@ -28,7 +28,7 @@ export default function Sidebar({
   const total = counts.todo + counts.prog + counts.done || 1;
 
   return (
-    <aside className="h-full overflow-hidden border-r bg-white p-3">
+    <aside className="h-full overflow-y-auto border-r bg-white p-3">
       <h2 className="mb-6 text-sm font-semibold text-gray-800">Kanban Companion</h2>
 
       <button 
