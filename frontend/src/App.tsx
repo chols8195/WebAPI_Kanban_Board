@@ -6,7 +6,7 @@ import PomodoroPanel from "./components/PomodoroPanel";
 import AddTaskForm from "./components/AddTaskForm";
 import AuthScreen from './components/AuthScreen';
 import type { Task, TaskStatus, Filters, Course } from "./types";
-import { getTasks, getCourses, updateTask, createTask, syncCanvas, isAuthenticated, signout } from "./services/api";
+import { getTasks, getCourses, updateTask, createTask, deleteTask, syncCanvas, isAuthenticated, signout } from "./services/api";
 
 function isOverdue(dueDate: string) {
   if (!dueDate) return false;
