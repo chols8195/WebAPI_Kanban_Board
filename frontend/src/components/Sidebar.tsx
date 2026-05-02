@@ -1,5 +1,4 @@
 import type { Filters, Course } from "../types";
-import { signout } from "../services/api";
 
 interface SidebarProps {
   counts: {
