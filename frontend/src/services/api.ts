@@ -61,19 +61,19 @@ export async function register(email: string, password: string, name: string, ca
 }
 
 export async function signin(email: string, password: string) {
-  const res = await fetch(`${BASE_URL}/auth/signin`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
+    const res = await fetch(`${BASE_URL}/auth/signin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  if (!res.ok) {
-    throw new Error(data.detail || "Login failed");
-  }
+    if (!res.ok) {
+        throw new Error(data.detail || "Login failed");
+    }
 
-  return data;
+    return data;
 }
 
 export async function getMe() {
@@ -108,21 +108,21 @@ export async function getTasks() {
 }
 
 export async function createTask(task: {
-  title: string;
-  course_id?: string;
-  card_type: string;
-  board_column: string;
-  description?: string;
-  due_date?: string;
-  estimated_minutes?: number;
+    title: string;
+    course_id?: string;
+    card_type: string;
+    board_column: string;
+    description?: string;
+    due_date?: string;
+    estimated_minutes?: number;
 }) {
-  const res = await fetch(`${BASE_URL}/tasks`, {
-    method: "POST",
-    headers: authHeaders(),
-    body: JSON.stringify(task),
-  });
+    const res = await fetch(`${BASE_URL}/tasks`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(task),
+    });
 
-  return res.json();
+    return res.json();
 }
 
 export async function updateTask(taskId: string, updates: { board_column?: string; title?: string; description?: string; due_date?: string; estimated_minutes?: number; }) {
@@ -175,4 +175,8 @@ export async function getPomodoros() {
         headers: authHeaders(),
     });
     return res.json();
+}
+
+export function signout() {
+    clearToken();
 }

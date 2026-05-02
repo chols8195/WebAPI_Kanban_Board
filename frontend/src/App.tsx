@@ -6,7 +6,7 @@ import PomodoroPanel from "./components/PomodoroPanel";
 import AddTaskForm from "./components/AddTaskForm";
 import AuthScreen from './components/AuthScreen';
 import type { Task, TaskStatus, Filters, Course } from "./types";
-import { getTasks, getCourses, updateTask, createTask, deleteTask, syncCanvas, isAuthenticated } from "./services/api";
+import { getTasks, getCourses, updateTask, createTask, syncCanvas, isAuthenticated, signout } from "./services/api";
 
 function isOverdue(dueDate: string) {
   if (!dueDate) return false;
@@ -170,6 +170,11 @@ const handleAddTask = async (newTask: {
     return <AuthScreen onAuth={() => setLoggedIn(true)} />;
   }
 
+  const handleLogout = () => {
+    signout();
+    setLoggedIn(false);
+  };
+
   return (
     <div className="h-screen w-screen overflow-hidden bg-gray-100">
       <div className="grid h-full w-full grid-cols-[190px_1fr_190px] bg-white">
@@ -193,6 +198,7 @@ const handleAddTask = async (newTask: {
             }))
           }
           onSync={handleSync}
+          onLogout={handleLogout}
         />
 
         <main className="flex h-full flex-col overflow-hidden p-3">

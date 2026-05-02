@@ -1,4 +1,5 @@
 import type { Filters, Course } from "../types";
+import { signout } from "../services/api";
 
 interface SidebarProps {
   counts: {
@@ -12,6 +13,7 @@ interface SidebarProps {
   onToggleStudyBlocks: () => void;
   onToggleOverdue: () => void;
   onSync: () => void;
+  onLogout: () => void;
 }
 
 export default function Sidebar({
@@ -21,7 +23,8 @@ export default function Sidebar({
   onSelectCourse,
   onToggleStudyBlocks,
   onToggleOverdue,
-  onSync
+  onSync,
+  onLogout
 }: SidebarProps) {
   const total = counts.todo + counts.prog + counts.done || 1;
 
@@ -141,6 +144,13 @@ export default function Sidebar({
           </button>
         </div>
       </div>
+
+      <button
+        onClick={onLogout}
+        className="mt-4 w-full rounded-lg border px-3 py-2 text-xs text-gray-600 hover:bg-gray-50"
+      >
+        Sign Out
+      </button>
     </aside>
   );
 }
