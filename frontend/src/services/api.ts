@@ -1,4 +1,5 @@
 const BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+
 console.log("BASE_URL:", BASE_URL);
 
 const TOKEN_STORAGE_KEY = "kanban_access_token";
